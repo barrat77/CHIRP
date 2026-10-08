@@ -6,6 +6,8 @@ import pandas as pd
 import streamlit as st
 from channels import DEFAULTS, read_csv, export_csv, validate, append_channels
 from repeaters import STATES, fetch_repeaters, read_listings, convert_results
+from quick_search import quick_local_search, SOURCE
+from urllib.parse import urlencode
 
 ROOT = Path(__file__).parent
 BASE_FILE = ROOT / 'local_data' / 'default_52.csv'
@@ -75,6 +77,21 @@ st.markdown('Data courtesy of [RepeaterBook.com](https://www.repeaterbook.com/).
 a, b = st.columns(2)
 state = a.selectbox('State', list(STATES), index=list(STATES).index('Virginia'))
 county = b.text_input('County', placeholder='e.g. Loudoun')
+if st.button('Quick Local Search!', type='primary'):
+    try:
+        with st.spinner('Reading regional forum listings…'):
+            candidates = quick_local_search(state, county)
+        merged = append_channels(base, st.session_state.additions + candidates, headers)
+        count = len(merged) - 52 - len(st.session_state.additions)
+        st.session_state.additions = merged[52:]
+        st.session_state.revision += 1
+        st.session_state.notice = f'Added {count} regional receive-only candidates. Confirm tones and access before enabling transmit.'
+        st.rerun()
+    except ValueError as exc:
+        st.error(str(exc))
+st.caption('Quick search reads the NOVA GMRS forum for Northern Virginia. Results are regional leads, not verified county coverage. Other locations use the directory sources below.')
+st.link_button('Search Google for local GMRS forums', 'https://www.google.com/search?' + urlencode({'q': f'GMRS repeaters {county} {state} forum'}))
+st.markdown(f'[NOVA GMRS forum listings]({SOURCE})')
 source = st.radio('Listings source', ['RepeaterBook online', 'Import listings file'], horizontal=True)
 if source == 'RepeaterBook online':
     with st.expander('Connect RepeaterBook'):
