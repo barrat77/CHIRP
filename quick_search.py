@@ -41,7 +41,7 @@ def parse_candidates(html, county):
     text = ''.join(parser.parts)
     rows = []
     seen = set()
-    pattern = r'(?P<name>[A-Z][A-Z0-9 ()-]*?\s\d{3})\s*[-–]\s*(?P<coverage>[^\n]*?)rx\s*(?P<rx>462\.\d+)\s*[/\\]\s*tx\s*(?P<tx>467\.\d+)'
+    pattern = r'(?P<name>[A-Z][A-Z0-9 ()-]*?\s\d{3}(?:\s*\([^\n)]*\))?)\s*[-–]\s*(?P<coverage>[^\n]*?)rx\s*(?P<rx>462\.\d+)\s*[/\\]\s*tx\s*(?P<tx>467\.\d+)'
     for match in re.finditer(pattern, text):
         rx, tx = Decimal(match['rx']), Decimal(match['tx'])
         if rx not in GMRS_OUTPUTS or tx - rx != Decimal('5'):
@@ -73,3 +73,4 @@ def quick_local_search(state, county):
     if not rows:
         raise ValueError('No recognizable listings found. The forum format may have changed; no channels were added.')
     return rows
+
