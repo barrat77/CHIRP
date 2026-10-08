@@ -71,6 +71,7 @@ with st.expander('Your 52 default channels', expanded=False):
     st.dataframe(pd.DataFrame(base, columns=headers), hide_index=True, width='stretch')
 
 st.subheader('Find GMRS repeaters')
+st.markdown('Data courtesy of [RepeaterBook.com](https://www.repeaterbook.com/).')
 a, b = st.columns(2)
 state = a.selectbox('State', list(STATES), index=list(STATES).index('Virginia'))
 county = b.text_input('County', placeholder='e.g. Loudoun')
@@ -88,12 +89,12 @@ if source == 'RepeaterBook online':
         try:
             with st.spinner('Searching GMRS listings…'):
                 records = fetch_repeaters(state, county, token.strip(), user_agent.strip())
-            found, skipped = convert_results(records, state, county)
+            found, skipped = convert_results(records, state, county, source='RepeaterBook')
             st.session_state.found = (state, county.strip(), found, skipped, 'RepeaterBook')
         except ValueError as exc:
             st.session_state.pop('found', None)
             st.error(str(exc))
-    st.caption('Data courtesy of RepeaterBook.com. Coverage depends on published listings; unlisted private systems cannot be discovered.')
+    st.caption('Coverage depends on published listings; unlisted private systems cannot be discovered.')
 else:
     listing_file = st.file_uploader('Repeater listings CSV or JSON', type=['csv', 'json'])
     st.caption('Required fields: State, County, Frequency, Input Freq. Optional: PL, TSQ, Use, Operational Status, Callsign, Landmark, Notes. Frequencies use MHz.')
@@ -120,6 +121,7 @@ if 'found' in st.session_state:
             preview = pd.DataFrame(found).drop(columns=['Location'])
             preview.insert(0, 'Add', True)
             choices = st.data_editor(preview, hide_index=True, width='stretch',
+                                     column_config={'RepeaterBook listing': st.column_config.LinkColumn('RepeaterBook listing', display_text='View on RepeaterBook')},
                                      disabled=[c for c in preview.columns if c != 'Add'],
                                      key='found-' + hashlib.sha256(str(st.session_state.found).encode()).hexdigest())
             st.caption('OPEN indicates public access. Private, closed, or unknown access requires checking with the owner. Access status is included in channel comments.')

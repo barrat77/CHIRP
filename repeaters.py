@@ -169,12 +169,19 @@ def convert_listing(item, state, county):
     return row
 
 
-def convert_results(records, state, county):
+def convert_results(records, state, county, source=None):
     channels, skipped = [], []
     for i, item in enumerate(records, 1):
         try:
             row = convert_listing(item, state, county)
             if row:
+                if source == 'RepeaterBook':
+                    repeater_id = str(item.get('Rptr ID', ''))
+                    link = 'https://www.repeaterbook.com/'
+                    if repeater_id.isascii() and repeater_id.isdigit() and state in STATES:
+                        link = f'https://www.repeaterbook.com/gmrs/details.php?state_id={STATES[state]}&ID={repeater_id}'
+                    row['RepeaterBook listing'] = link
+                    row['Comment'] += f' | Data courtesy of RepeaterBook.com. {link}'
                 channels.append(row)
         except ValueError as exc:
             skipped.append(f'Listing {i}: {exc}')

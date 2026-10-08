@@ -13,6 +13,13 @@ def listing(**changes):
 
 
 class RepeaterTests(unittest.TestCase):
+    def test_online_attribution_and_detail_link(self):
+        rows, _ = convert_results([listing(**{'Rptr ID': '123'})], 'Virginia', 'Loudoun', source='RepeaterBook')
+        self.assertEqual(rows[0]['RepeaterBook listing'], 'https://www.repeaterbook.com/gmrs/details.php?state_id=51&ID=123')
+        self.assertIn('Data courtesy of RepeaterBook.com.', rows[0]['Comment'])
+        imported, _ = convert_results([listing()], 'Virginia', 'Loudoun')
+        self.assertNotIn('RepeaterBook listing', imported[0])
+
     def test_county_filter_access_and_offset(self):
         rows, skipped = convert_results([listing(), listing(County='Fairfax')], 'Virginia', 'Loudoun County')
         self.assertEqual(len(rows), 1)
