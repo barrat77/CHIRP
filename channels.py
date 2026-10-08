@@ -74,3 +74,23 @@ def export_csv(headers, rows):
     writer.writeheader()
     writer.writerows(rows)
     return output.getvalue().encode('utf-8')
+
+
+def append_channels(base, additions, headers):
+    """Keep every base row unchanged; append unique additions after its last slot."""
+    result = [dict(row) for row in base]
+    next_location = max(int(row['Location']) for row in base) + 1
+    def identity(row):
+        return tuple(str(row.get(k, '')) for k in
+                     ('Name', 'Frequency', 'Duplex', 'Offset', 'Tone', 'rToneFreq',
+                      'cToneFreq', 'DtcsCode', 'RxDtcsCode', 'CrossMode'))
+    seen = {identity(row) for row in result}
+    for row in additions:
+        if identity(row) in seen:
+            continue
+        seen.add(identity(row))
+        new = {field: str(row.get(field, DEFAULTS.get(field, ''))) for field in headers}
+        new['Location'] = str(next_location)
+        result.append(new)
+        next_location += 1
+    return result
