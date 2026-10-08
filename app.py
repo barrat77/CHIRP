@@ -59,6 +59,8 @@ if st.session_state.get('source') != fingerprint:
     st.session_state.additions = []
     st.session_state.revision = 0
     st.session_state.pop('found', None)
+st.session_state.setdefault('additions', [])
+st.session_state.setdefault('revision', 0)
 
 left, middle, right = st.columns(3)
 left.metric('Default channels', 52)
