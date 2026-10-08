@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from channels import DEFAULTS, read_csv, export_csv, validate
 
+EXAMPLE = Path(__file__).parent / 'examples' / 'channels.csv'
 st.set_page_config(page_title='CHIRP | Channel workshop', page_icon='📻', layout='wide')
 st.title('📻 CHIRP')
 st.caption('Your local channel workshop · Example CSV → Edit channels → Download')
@@ -14,10 +15,10 @@ with st.sidebar:
     upload = st.file_uploader('CHIRP-exported CSV', type=['csv'])
     demo = st.checkbox('Use demo channels', value=upload is None)
     st.caption('Uploads stay in this local session. They are not added to GitHub.')
-    st.download_button('Download example CSV', Path('examples/channels.csv').read_bytes(),
+    st.download_button('Download example CSV', EXAMPLE.read_bytes(),
                        'example.csv', 'text/csv')
 
-data = upload.getvalue() if upload else (Path('examples/channels.csv').read_bytes() if demo else None)
+data = upload.getvalue() if upload else (EXAMPLE.read_bytes() if demo else None)
 if data is None:
     st.info('Upload an example exported from CHIRP, or use the demo to explore.')
     st.stop()
